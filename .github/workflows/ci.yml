@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HYPERFINE_VERSION: "1.20.0"
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked
+      - run: uv run ruff format --check .
+      - run: uv run ruff check --output-format=github .
+      - run: uv run mypy
+      - run: uv run pyright
+
+  test:
+    name: test (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: ["3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install hyperfine
+        shell: bash
+        run: |
+          case "$RUNNER_OS-$RUNNER_ARCH" in
+            Linux-X64)   target=x86_64-unknown-linux-gnu ;;
+            Linux-ARM64) target=aarch64-unknown-linux-gnu ;;
+            macOS-ARM64) target=aarch64-apple-darwin ;;
+            macOS-X64)   target=x86_64-apple-darwin ;;
+            *) echo "unsupported runner: $RUNNER_OS-$RUNNER_ARCH" >&2; exit 1 ;;
+          esac
+          name="hyperfine-v${HYPERFINE_VERSION}-${target}"
+          curl -fsSL "https://github.com/sharkdp/hyperfine/releases/download/v${HYPERFINE_VERSION}/${name}.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/$name" >> "$GITHUB_PATH"
+      - run: hyperfine --version
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: uv sync --locked
+      - run: uv run pytest

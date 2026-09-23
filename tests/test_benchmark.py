@@ -217,11 +217,11 @@ def test_option_name_literal_matches_options() -> None:
     assert set(names) == set(BenchmarkOptions.__optional_keys__)
 
 
-@pytest.mark.skipif(sys.version_info < (3, 13), reason="copy.replace is new in 3.13")
 class _Replace(Protocol):
     def __call__(self, obj: Benchmark, /, **changes: int) -> Benchmark: ...
 
 
+@pytest.mark.skipif(sys.version_info < (3, 13), reason="copy.replace is new in 3.13")
 def test_copy_replace_uses_with_options() -> None:
     bench = Benchmark("a", min_runs=2)
     replace: _Replace = getattr(copy, "replace")  # noqa: B009 - copy.replace is 3.13+

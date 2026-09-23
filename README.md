@@ -170,3 +170,7 @@ named tuple, e.g. `hyperfine.version() >= (1, 20, 0)`.
 uv sync
 uv run ruff format --check . && uv run ruff check . && uv run mypy && uv run pyright && uv run pytest -q
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).

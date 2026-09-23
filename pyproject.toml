@@ -4,6 +4,8 @@ version = "0.1.0"
 description = "Typed, ergonomic Python interface for the hyperfine command-line benchmarking tool."
 readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
+license-files = ["LICENSE"]
 keywords = ["benchmark", "hyperfine", "performance", "timing"]
 classifiers = [
     "Development Status :: 4 - Beta",

@@ -1,0 +1,140 @@
+[project]
+name = "hyperfine-py"
+version = "0.1.0"
+description = "Typed, ergonomic Python interface for the hyperfine command-line benchmarking tool."
+readme = "README.md"
+requires-python = ">=3.12"
+keywords = ["benchmark", "hyperfine", "performance", "timing"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Testing",
+    "Topic :: System :: Benchmark",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "mypy>=1.18",
+    "pyright>=1.1.405",
+    "pytest>=8.4",
+    "pytest-asyncio>=1.2",
+    "pytest-cov>=7.0",
+    "ruff>=0.13",
+]
+
+[build-system]
+requires = ["uv_build>=0.12,<0.13"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "hyperfine"
+
+# --------------------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    # D203/D213 conflict with D211/D212 (which we keep).
+    "D203",
+    "D213",
+    # COM812/ISC001 conflict with the ruff formatter.
+    "COM812",
+    "ISC001",
+    # CPY001: the project does not use per-file copyright headers.
+    "CPY001",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "S101",    # pytest uses bare asserts.
+    "PLR2004", # magic numbers are expected values in tests.
+    "D",       # test functions are self-describing; docstrings add noise.
+    "S603",    # tests spawn trusted, fixed subprocess argv.
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.flake8-type-checking]
+strict = true
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# --------------------------------------------------------------------------- mypy
+[tool.mypy]
+files = ["src", "tests"]
+python_version = "3.12"
+strict = true
+warn_unreachable = true
+disallow_any_explicit = true
+disallow_any_expr = true
+disallow_any_decorated = true
+disallow_any_unimported = true
+enable_error_code = [
+    "ignore-without-code",
+    "redundant-expr",
+    "truthy-bool",
+    "truthy-iterable",
+    "possibly-undefined",
+    "explicit-override",
+    "unused-awaitable",
+    "redundant-self",
+    "mutable-override",
+    "deprecated",
+    "exhaustive-match",
+]
+
+# --------------------------------------------------------------------------- pyright
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+reportUnnecessaryTypeIgnoreComment = "error"
+reportImplicitOverride = "error"
+reportMissingSuperCall = "error"
+reportPropertyTypeMismatch = "error"
+reportUninitializedInstanceVariable = "error"
+reportImportCycles = "error"
+reportCallInDefaultInitializer = "error"
+reportImplicitStringConcatenation = "error"
+reportUnusedCallResult = "error"
+
+# --------------------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests", "src"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--doctest-modules",
+    "--import-mode=importlib",
+    "--cov=hyperfine",
+    "--cov-report=term-missing:skip-covered",
+]
+xfail_strict = true
+filterwarnings = ["error"]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
+
+# --------------------------------------------------------------------------- coverage
+[tool.coverage.run]
+branch = true
+source = ["hyperfine"]
+
+[tool.coverage.report]
+fail_under = 95
+show_missing = true
+exclude_also = ["if TYPE_CHECKING:", "@overload", "raise AssertionError", "assert_never\\("]
